@@ -1097,7 +1097,7 @@ class MXMotor(Qontroller):
 		
 		# Position
 		self.x = _ChannelVector([0] * self.n_chs)
-		self.x.set_handle = lambda ch,val: self.set_value(ch,'X',val)
+		self.x.set_handle = lambda ch,val: self.set_value(ch,'X',val, (5, 20))
 		self.x.get_handle = lambda ch,val: self.get_value(ch,'X')
 		
 		self.xmin = _ChannelVector([0] * self.n_chs)
@@ -1120,7 +1120,7 @@ class MXMotor(Qontroller):
 		
 		self.initialised = True
 	
-	def set_value (self, ch, para='X', new=0):
+	def set_value (self, ch, para='X', new=0, target_errors=None):
 		"""
 		Single-channel value setter.
 		"""
@@ -1136,11 +1136,11 @@ class MXMotor(Qontroller):
 				full = self.x_fulls[ch]
 				# TODO: A 32-b version of issue_binary_command is not yet implemented
 				raise RuntimeError("Binary mode X commands not implemented yet. Use binary_mode = False to workaround.")
-			self.issue_binary_command(CMD_CODES[para.upper()], ch=ch, RW=0, value_int=int((new/full)*0xFFFF) )
+			self.issue_binary_command(CMD_CODES[para.upper()], ch=ch, RW=0, value_int=int((new/full)*0xFFFF), target_errors=target_errors)
 		else:
-			self.issue_command(para, ch=ch, operator='=', value=new)
+			self.issue_command(para, ch=ch, operator='=', value=new, target_errors=target_errors)
 	
-	def get_value (self, ch, para='X'):
+	def get_value (self, ch, para='X', target_errors=None):
 		"""
 		Single-channel value getter.
 		"""
@@ -1150,12 +1150,14 @@ class MXMotor(Qontroller):
 		if self.binary_mode:
 			# TODO: A 32-b version of issue_binary_command is not yet implemented
 			raise RuntimeError("Binary mode X commands not implemented yet. Use binary_mode = False to workaround.")
-			result = self.issue_binary_command(CMD_CODES[para.upper()], ch=ch, RW=1, n_lines_requested = 1, output_regex = '((?:\+|-){0,1}[\d\.]+)')
+			result = self.issue_binary_command(CMD_CODES[para.upper()], ch=ch, RW=1, n_lines_requested = 1, output_regex = '((?:\+|-){0,1}[\d\.]+)', target_errors=target_errors)
 		else:
-			result = self.issue_command(para, ch = ch, operator = '?', n_lines_requested = 1, output_regex = '((?:\+|-){0,1}[\d\.]+)')
+			result = self.issue_command(para, ch = ch, operator = '?', n_lines_requested = 1, output_regex = '((?:\+|-){0,1}[\d\.]+)', target_errors=target_errors)
 		if len(result) > 0:
 			if len(result[0]) > 0:
 				s = result[0][0]
+                if s is None:
+					return None
 				if '.' in s:
 					return float(s)
 				else:
