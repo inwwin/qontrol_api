@@ -1156,7 +1156,7 @@ class MXMotor(Qontroller):
 		if len(result) > 0:
 			if len(result[0]) > 0:
 				s = result[0][0]
-                if s is None:
+				if s is None:
 					return None
 				if '.' in s:
 					return float(s)
