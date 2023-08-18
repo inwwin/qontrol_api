@@ -1118,6 +1118,7 @@ class MXMotor(Qontroller):
 		self.mode.set_handle = lambda ch,val: self.set_value(ch,'MODE',val)
 		self.mode.get_handle = lambda ch,val: self.get_value(ch,'MODE')
 		
+		self.sleep = time.sleep
 		self.initialised = True
 	
 	def set_value (self, ch, para='X', new=0, target_errors=None):
@@ -1261,7 +1262,7 @@ class MXMotor(Qontroller):
 		  t_poll     Motor state polling time, seconds. Larger numbers give less polling.
 		"""
 		# In case movement was just started, ensure motion can begin before we wait
-		time.sleep(0.01)
+		self.sleep(0.01)
 		
 		# If channels is not set, wait for all channels
 		if channels is None:
@@ -1286,7 +1287,7 @@ class MXMotor(Qontroller):
 					print ("MX.wait_until_stopped: Warning: Timed out after {:} seconds waiting for channel {:} to stop.".format(timeout, ch))
 					break
 				
-				time.sleep(t_poll)
+				self.sleep(t_poll)
 
 
 class SXInput(Qontroller):
